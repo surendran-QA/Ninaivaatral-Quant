@@ -21,6 +21,16 @@ export const apiClient = {
     return !!localStorage.getItem('auth_token');
   },
   
+  getHealth: async () => {
+    // In the real app, this will hit GET /health on the FastAPI backend
+    // which will also ping the LiteLLM proxy internally.
+    await delay(200);
+    return {
+      backend: 'online',
+      litellm: 'online'
+    };
+  },
+  
   analyze: async (payloadText) => {
     await delay(1500); // Simulate AI processing time
     

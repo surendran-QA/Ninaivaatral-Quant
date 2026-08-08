@@ -1,11 +1,34 @@
-import React from 'react';
-import { LogOut, Activity, Circle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LogOut, Activity, Circle, Server, Cpu } from 'lucide-react';
 import { apiClient } from '../api/client';
 
 export default function Header({ onLogout }) {
+  const [health, setHealth] = useState({ backend: 'checking', litellm: 'checking' });
+
+  useEffect(() => {
+    // Poll health status every 10 seconds
+    const checkHealth = async () => {
+      try {
+        const res = await apiClient.getHealth();
+        setHealth(res);
+      } catch (err) {
+        setHealth({ backend: 'offline', litellm: 'offline' });
+      }
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleLogout = () => {
     apiClient.logout();
     onLogout();
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 'online') return 'var(--success)';
+    if (status === 'checking') return 'var(--warning)';
+    return 'var(--error)';
   };
 
   return (
@@ -34,9 +57,18 @@ export default function Header({ onLogout }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Circle size={10} fill="var(--success)" color="var(--success)" />
-          <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>Online</span>
+        
+        {/* System Health Indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title="FastAPI Backend">
+            <Server size={14} color={getStatusColor(health.backend)} />
+            <span style={{ fontSize: '11px', fontWeight: '600', color: getStatusColor(health.backend) }}>API</span>
+          </div>
+          <div style={{ width: '1px', height: '12px', background: 'var(--glass-border)' }}></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title="LiteLLM Engine">
+            <Cpu size={14} color={getStatusColor(health.litellm)} />
+            <span style={{ fontSize: '11px', fontWeight: '600', color: getStatusColor(health.litellm) }}>LLM</span>
+          </div>
         </div>
         
         <button 

@@ -1,0 +1,20 @@
+model_list:
+  # ----------------------------------------------------
+  # GENERATION (Text completion)
+  # ----------------------------------------------------
+  - model_name: "openai/gpt-4o-mini"
+    litellm_params:
+      model: "gemini/gemini-2.5-flash"
+      api_key: "os.environ/GEMINI_API_KEY"
+
+  # ----------------------------------------------------
+  # EMBEDDINGS
+  # ----------------------------------------------------
+  # The IDE Gemini key only supports gemini-embedding-2.
+  - model_name: "openai/text-embedding-3-small"
+    litellm_params:
+      model: "gemini/gemini-embedding-2"
+      api_key: "os.environ/GEMINI_API_KEY"
+
+litellm_settings:
+  drop_params: true
