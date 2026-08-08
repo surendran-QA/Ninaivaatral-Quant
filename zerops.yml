@@ -1,0 +1,58 @@
+zerops:
+  # Service 1: LiteLLM Proxy
+  - setup: litellm
+    build:
+      base: python@3.11
+      buildCommands:
+        - cd litellm && pip install -r requirements.txt
+      deployFiles: litellm/~
+    run:
+      base: python@3.11
+      ports:
+        - port: 4000
+          httpSupport: true
+      start: python -m litellm --config router_config.yaml --host 0.0.0.0 --port 4000
+      envVariables:
+        GEMINI_API_KEY: ${GEMINI_API_KEY}
+        MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+
+  # Service 2: FastAPI Backend
+  - setup: backend
+    build:
+      base: python@3.11
+      buildCommands:
+        - cd backend && pip install -r requirements.txt
+      deployFiles: backend/~
+    run:
+      base: python@3.11
+      ports:
+        - port: 8000
+          httpSupport: true
+      start: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+      readinessCheck:
+        httpGet:
+          port: 8000
+          path: /health
+      envVariables:
+        OPENAI_API_KEY: sk-1234
+        OPENAI_BASE_URL: http://litellm:4000
+        EMBEDDING_PROVIDER: openai
+        EMBEDDING_MODEL: openai/text-embedding-3-small
+        EMBEDDING_ENDPOINT: http://litellm:4000
+        EMBEDDING_API_KEY: sk-1234
+        COGNEE_SKIP_CONNECTION_TEST: "true"
+        OPTIMIZE_TOKENS: "True"
+        LLM_PROVIDER: openai
+        ADMIN_USERNAME: ${ADMIN_USERNAME}
+        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        JWT_SECRET: ${JWT_SECRET}
+
+  # Service 3: React Frontend (Static)
+  - setup: frontend
+    build:
+      base: nodejs@20
+      buildCommands:
+        - cd frontend && npm ci && npm run build
+      deployFiles: frontend/dist/~
+    run:
+      base: static

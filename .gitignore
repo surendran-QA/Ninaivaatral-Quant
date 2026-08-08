@@ -1,0 +1,36 @@
+# Environments
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Cognee data
+cognee_data/
+cognee_system/
+ArchivedPayloads/
+IngestionQueue/
+FailedPayloads/
+Quantitative_Trade_Log.jsonl
+Processed_Sessions.txt
