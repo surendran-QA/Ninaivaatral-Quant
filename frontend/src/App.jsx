@@ -1,122 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { apiClient } from './api/client';
+import LoginPage from './components/LoginPage';
+import Header from './components/Header';
+import PayloadUploader from './components/PayloadUploader';
+import AnalysisResult from './components/AnalysisResult';
+import HistoryPanel from './components/HistoryPanel';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentResult, setCurrentResult] = useState(null);
+  
+  // Check auth state on load
+  useEffect(() => {
+    setIsAuthenticated(apiClient.isAuthenticated());
+  }, []);
+
+  const handleAnalyze = async (payload) => {
+    setIsAnalyzing(true);
+    try {
+      const result = await apiClient.analyze(payload);
+      setCurrentResult(result);
+    } catch (err) {
+      console.error(err);
+      // Fallback simple error state if needed
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+      <Header onLogout={() => setIsAuthenticated(false)} />
+      
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: '24px',
+        alignItems: 'stretch'
+      }}>
+        {/* Left Column: Upload */}
+        <div style={{ minHeight: '500px' }}>
+          <PayloadUploader onAnalyze={handleAnalyze} isAnalyzing={isAnalyzing} />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
+        
+        {/* Right Column: Results */}
+        <div style={{ minHeight: '500px' }}>
+          <AnalysisResult result={currentResult} isLoading={isAnalyzing} />
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <HistoryPanel />
+    </div>
+  );
 }
 
-export default App
+export default App;
