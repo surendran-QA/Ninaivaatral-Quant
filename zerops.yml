@@ -21,7 +21,7 @@ zerops:
     build:
       base: ubuntu@24.04
       prepareCommands:
-        - apt-get update && apt-get install -y cmake g++ build-essential python3-pip
+        - sudo apt-get update && sudo apt-get install -y cmake g++ build-essential python3-pip
       buildCommands:
         - cd backend && pip3 install --no-cache-dir -r requirements.txt
       deployFiles: backend/~
