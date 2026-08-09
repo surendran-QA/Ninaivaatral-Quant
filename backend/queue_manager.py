@@ -56,8 +56,8 @@ async def background_worker():
         payload_queue.task_done()
         
         time_since_last = time.time() - last_processed
-        if time_since_last < 60.0:
-            sleep_time = 60.0 - time_since_last
+        if time_since_last < 4.0:
+            sleep_time = 4.0 - time_since_last
             logging.info(f"[Background Worker] RPM Limit approaching. Dynamic pacing: sleeping for {sleep_time:.1f}s...")
             await asyncio.sleep(sleep_time)
             

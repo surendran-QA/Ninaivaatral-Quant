@@ -10,6 +10,7 @@ __pycache__/
 env/
 venv/
 ENV/
+nara.txt
 
 # Node
 node_modules/

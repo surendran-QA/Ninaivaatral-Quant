@@ -13,6 +13,7 @@ from queue_manager import payload_queue, background_worker, INGESTION_DIR
 from llm_service import analyze_setup_payload, save_failed_payload
 from auth import verify_token, create_access_token
 import os
+import state_manager
 
 ARCHIVE_DIR = "ArchivedPayloads"
 os.makedirs(ARCHIVE_DIR, exist_ok=True)
@@ -187,6 +188,18 @@ async def analyze_setup(request: Request):
         with open(archive_file, "w") as f:
             json.dump(data, f)
             
+        # Handle Continuous Learning Pending State
+        fields = data.get("fields", {})
+        if fields:
+            trade_id = fields.get("trade_id")
+            strategy = fields.get("strategy")
+            date_val = fields.get("date")
+            direction = fields.get("direction")
+            entry_price = fields.get("entry_price")
+            time_val = fields.get("time")
+            if trade_id:
+                state_manager.add_pending_trade(trade_id, strategy, date_val, direction, entry_price, time_val)
+            
         return response
         
     except Exception as e:
@@ -194,6 +207,64 @@ async def analyze_setup(request: Request):
         if 'payload' in locals() and payload:
             save_failed_payload(payload, "analyze")
         return {"status": "error", "message": str(e), "win_probability": "50", "error_flag": True}
+
+@app.get("/pending_trades", dependencies=[Depends(verify_token)])
+async def get_pending_trades():
+    return state_manager.get_pending_trades()
+
+class DeleteTradesRequest(BaseModel):
+    trade_ids: list[str]
+
+@app.delete("/pending_trades", dependencies=[Depends(verify_token)])
+async def delete_pending_trades(req: DeleteTradesRequest):
+    success = state_manager.delete_pending_trades(req.trade_ids)
+    if success:
+        return {"status": "success", "message": f"Deleted {len(req.trade_ids)} trades"}
+    raise HTTPException(status_code=400, detail="Could not delete some or all trades")
+
+class ResolveTradeRequest(BaseModel):
+    trade_id: str
+    exit_time: str
+    exit_price: float
+    pnl: float
+    outcome: str
+
+@app.post("/resolve_trade", dependencies=[Depends(verify_token)])
+async def resolve_trade(req: ResolveTradeRequest):
+    trade = state_manager.resolve_pending_trade(req.trade_id)
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found or already resolved")
+        
+    # Construct the final Training Payload
+    trade_payload = f"""[SESSION: {trade['trade_id']}]
+Strategy: {trade['strategy']}
+Date: {trade['date']}
+Symbol: MNQ
+System Bias: {trade['direction']}
+Entry: {trade['entry_price']} @ {trade['time']} ET
+Exit: {req.exit_price} @ {req.exit_time} ET
+--- OUTCOME ---
+Result: {req.outcome}
+Net PnL: {req.pnl}
+"""
+    
+    # Save to ingestion queue
+    filename = f"{INGESTION_DIR}/resolved_{trade['trade_id']}_{uuid.uuid4().hex[:8]}.json"
+    
+    data_to_save = {
+        "payload": trade_payload,
+        "fields": {
+            "trade_id": trade['trade_id'],
+            "trade_result": "EOD Flatten" # Trigger cognify
+        }
+    }
+    
+    with open(filename, "w") as f:
+        json.dump(data_to_save, f)
+        
+    await payload_queue.put(filename)
+    
+    return {"status": "success", "message": "Trade resolved and queued for Continuous Learning!"}
 
 if __name__ == "__main__":
     print("Starting Ninaivaatral Quant Backend on http://0.0.0.0:8000...")

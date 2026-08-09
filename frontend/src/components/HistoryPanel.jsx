@@ -5,6 +5,7 @@ import { apiClient } from '../api/client';
 export default function HistoryPanel() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [limit, setLimit] = useState('5'); // '5', '10', '20', 'All'
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -26,16 +27,33 @@ export default function HistoryPanel() {
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
+  const displayedHistory = limit === 'All' ? history : history.slice(0, parseInt(limit));
+
   return (
     <div className="glass-panel" style={{ padding: '24px', marginTop: '32px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-        <History size={20} color="var(--primary-accent)" />
-        <h3 style={{ fontSize: '16px', fontWeight: '600' }}>ANALYSIS HISTORY</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <History size={20} color="var(--primary-accent)" />
+          <h3 style={{ fontSize: '16px', fontWeight: '600' }}>ANALYSIS HISTORY</h3>
+        </div>
+        <div>
+          <select 
+            value={limit} 
+            onChange={(e) => setLimit(e.target.value)}
+            className="glass-input"
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+          >
+            <option value="5">Show 5 Results</option>
+            <option value="10">Show 10 Results</option>
+            <option value="20">Show 20 Results</option>
+            <option value="All">Show All</option>
+          </select>
+        </div>
       </div>
       
       {isLoading ? (
         <div style={{ color: 'var(--text-tertiary)', fontSize: '14px' }}>Loading history...</div>
-      ) : history.length === 0 ? (
+      ) : displayedHistory.length === 0 ? (
         <div style={{ color: 'var(--text-tertiary)', fontSize: '14px' }}>No past analyses found.</div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
@@ -49,7 +67,7 @@ export default function HistoryPanel() {
               </tr>
             </thead>
             <tbody>
-              {history.map((item) => (
+              {displayedHistory.map((item) => (
                 <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: '12px 8px', color: 'var(--text-primary)' }}>{formatDate(item.timestamp)}</td>
                   <td style={{ padding: '12px 8px', textAlign: 'center' }}>

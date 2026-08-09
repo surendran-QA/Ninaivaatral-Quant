@@ -65,7 +65,7 @@ export default function AnalysisResult({ result, isLoading }) {
   const scoreColor = getScoreColor(result.confidence_score);
 
   return (
-    <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
       {/* Top Metrics Row */}
       <div style={{ display: 'flex', padding: '24px', borderBottom: '1px solid var(--glass-border)' }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

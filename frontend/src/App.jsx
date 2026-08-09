@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { apiClient } from './api/client';
 import LoginPage from './components/LoginPage';
 import Header from './components/Header';
-import PayloadUploader from './components/PayloadUploader';
-import AnalysisResult from './components/AnalysisResult';
-import HistoryPanel from './components/HistoryPanel';
+import Sidebar from './components/Sidebar';
+import Home from './pages/Home';
+import PostTradeInjection from './pages/PostTradeInjection';
 import './App.css';
 
 function App() {
@@ -17,10 +18,10 @@ function App() {
     setIsAuthenticated(apiClient.isAuthenticated());
   }, []);
 
-  const handleAnalyze = async (payload) => {
+  const handleAnalyze = async (payload, fields) => {
     setIsAnalyzing(true);
     try {
-      const result = await apiClient.analyze(payload);
+      const result = await apiClient.analyze(payload, fields);
       setCurrentResult(result);
     } catch (err) {
       console.error(err);
@@ -35,28 +36,33 @@ function App() {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
-      <Header onLogout={() => setIsAuthenticated(false)} />
-      
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '24px',
-        alignItems: 'stretch'
-      }}>
-        {/* Left Column: Upload */}
-        <div style={{ minHeight: '500px' }}>
-          <PayloadUploader onAnalyze={handleAnalyze} isAnalyzing={isAnalyzing} />
-        </div>
+    <BrowserRouter>
+      <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <Sidebar />
         
-        {/* Right Column: Results */}
-        <div style={{ minHeight: '500px' }}>
-          <AnalysisResult result={currentResult} isLoading={isAnalyzing} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '24px 24px 0 24px', flexShrink: 0 }}>
+            <Header onLogout={() => setIsAuthenticated(false)} />
+          </div>
+          
+          <div style={{ flex: 1, padding: '0 24px 24px 24px', overflowY: 'auto' }}>
+            <Routes>
+              <Route 
+                path="/" 
+                element={
+                  <Home 
+                    currentResult={currentResult} 
+                    isAnalyzing={isAnalyzing} 
+                    handleAnalyze={handleAnalyze} 
+                  />
+                } 
+              />
+              <Route path="/post-trade" element={<PostTradeInjection />} />
+            </Routes>
+          </div>
         </div>
       </div>
-
-      <HistoryPanel />
-    </div>
+    </BrowserRouter>
   );
 }
 

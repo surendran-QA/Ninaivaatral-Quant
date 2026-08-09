@@ -62,12 +62,16 @@ export default function Header({ onLogout }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title="FastAPI Backend">
             <Server size={14} color={getStatusColor(health.backend)} />
-            <span style={{ fontSize: '11px', fontWeight: '600', color: getStatusColor(health.backend) }}>API</span>
+            <span style={{ fontSize: '11px', fontWeight: '600', color: getStatusColor(health.backend) }}>
+              API: {health.backend.toUpperCase()}
+            </span>
           </div>
           <div style={{ width: '1px', height: '12px', background: 'var(--glass-border)' }}></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title="LiteLLM Engine">
             <Cpu size={14} color={getStatusColor(health.litellm)} />
-            <span style={{ fontSize: '11px', fontWeight: '600', color: getStatusColor(health.litellm) }}>LLM</span>
+            <span style={{ fontSize: '11px', fontWeight: '600', color: getStatusColor(health.litellm) }}>
+              LLM: {health.litellm.toUpperCase()}
+            </span>
           </div>
         </div>
         

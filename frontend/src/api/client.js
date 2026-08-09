@@ -39,17 +39,22 @@ export const apiClient = {
     }
   },
   
-  analyze: async (payloadText) => {
+  analyze: async (payloadText, fields = null) => {
     const token = localStorage.getItem('auth_token');
     if (!token) throw new Error('Not authenticated');
     
+    const body = { payload: payloadText };
+    if (fields) {
+      body.fields = fields;
+    }
+
     const res = await fetch(`${API_URL}/analyze`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ payload: payloadText })
+      body: JSON.stringify(body)
     });
     
     if (!res.ok) {
@@ -75,6 +80,52 @@ export const apiClient = {
       throw new Error(`History fetch failed: ${res.statusText}`);
     }
     
+    return await res.json();
+  },
+  
+  getPendingTrades: async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) throw new Error('Not authenticated');
+    
+    const res = await fetch(`${API_URL}/pending_trades`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!res.ok) throw new Error(`Fetch pending trades failed: ${res.statusText}`);
+    return await res.json();
+  },
+  
+  resolveTrade: async (tradeData) => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) throw new Error('Not authenticated');
+    
+    const res = await fetch(`${API_URL}/resolve_trade`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(tradeData)
+    });
+    
+    if (!res.ok) throw new Error(`Resolve trade failed: ${res.statusText}`);
+    return await res.json();
+  },
+
+  deletePendingTrades: async (tradeIds) => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) throw new Error('Not authenticated');
+    
+    const res = await fetch(`${API_URL}/pending_trades`, {
+      method: 'DELETE',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ trade_ids: tradeIds })
+    });
+    
+    if (!res.ok) throw new Error(`Delete trades failed: ${res.statusText}`);
     return await res.json();
   }
 };
