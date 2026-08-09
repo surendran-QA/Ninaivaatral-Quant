@@ -43,9 +43,9 @@ zerops:
         COGNEE_SKIP_CONNECTION_TEST: "true"
         OPTIMIZE_TOKENS: "True"
         LLM_PROVIDER: openai
-        ADMIN_USERNAME: ${ADMIN_USERNAME}
-        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-        JWT_SECRET: ${JWT_SECRET}
+        ADMIN_USERNAME: admin
+        ADMIN_PASSWORD: admin
+        JWT_SECRET: my-super-secret-key-123
 
   # Service 3: React Frontend (Static)
   - setup: frontend
