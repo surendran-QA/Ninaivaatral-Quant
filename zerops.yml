@@ -19,7 +19,7 @@ zerops:
   # Service 2: FastAPI Backend
   - setup: backend
     build:
-      base: python@3.11
+      base: ubuntu/python@3.11
       buildCommands:
         - cd backend && pip install --no-cache-dir -r requirements.txt
       deployFiles: backend/~
