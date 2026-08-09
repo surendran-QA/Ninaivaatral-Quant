@@ -2,16 +2,16 @@ zerops:
   # Service 1: LiteLLM Proxy
   - setup: litellm
     build:
-      base: python@3.11
+      base: ubuntu/python@3.11
       buildCommands:
-        - cd litellm && pip install -r requirements.txt
+        - cd litellm && python3 -m venv venv && venv/bin/pip install --no-cache-dir -r requirements.txt
       deployFiles: litellm/~
     run:
-      base: python@3.11
+      base: ubuntu/python@3.11
       ports:
         - port: 4000
           httpSupport: true
-      start: python -m litellm --config router_config.yaml --host 0.0.0.0 --port 4000
+      start: cd /var/www && venv/bin/python -m litellm --config router_config.yaml --host 0.0.0.0 --port 4000
       envVariables:
         GEMINI_API_KEY: ${GEMINI_API_KEY}
         MISTRAL_API_KEY: ${MISTRAL_API_KEY}
