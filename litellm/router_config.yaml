@@ -6,7 +6,7 @@ model_list:
     litellm_params:
       model: "openai/mistral-large"
       api_base: "https://router.bynara.id/v1"
-      api_key: "os.environ/NARA_API_KEY"
+      api_key: "os.environ/MISTRAL_API_KEY"
 
   # ----------------------------------------------------
   # EMBEDDINGS
