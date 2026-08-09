@@ -1,5 +1,5 @@
 // Production API Client connecting to FastAPI backend
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = 'https://backend-22c-8000.ny1.zerops.app';
 
 export const apiClient = {
   login: async (username, password) => {
