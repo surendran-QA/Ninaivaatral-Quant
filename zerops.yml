@@ -21,14 +21,14 @@ zerops:
     build:
       base: ubuntu/python@3.11
       buildCommands:
-        - cd backend && pip install --no-cache-dir -r requirements.txt
+        - cd backend && python3 -m venv venv && venv/bin/pip install --no-cache-dir -r requirements.txt
       deployFiles: backend/~
     run:
-      base: python@3.11
+      base: ubuntu/python@3.11
       ports:
         - port: 8000
           httpSupport: true
-      start: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+      start: cd /var/www && venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000
       readinessCheck:
         httpGet:
           port: 8000
