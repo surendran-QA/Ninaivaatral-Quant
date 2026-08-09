@@ -19,11 +19,11 @@ zerops:
   # Service 2: FastAPI Backend
   - setup: backend
     build:
-      base: python@3.11
+      base: ubuntu@24.04
       prepareCommands:
-        - apt-get update && apt-get install -y cmake g++ build-essential
+        - apt-get update && apt-get install -y cmake g++ build-essential python3-pip
       buildCommands:
-        - cd backend && pip install --no-cache-dir -r requirements.txt
+        - cd backend && pip3 install --no-cache-dir -r requirements.txt
       deployFiles: backend/~
     run:
       base: python@3.11
