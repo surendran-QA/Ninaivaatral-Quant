@@ -20,8 +20,10 @@ zerops:
   - setup: backend
     build:
       base: python@3.11
+      prepareCommands:
+        - apt-get update && apt-get install -y cmake g++ build-essential
       buildCommands:
-        - cd backend && pip install -r requirements.txt
+        - cd backend && pip install --no-cache-dir -r requirements.txt
       deployFiles: backend/~
     run:
       base: python@3.11
