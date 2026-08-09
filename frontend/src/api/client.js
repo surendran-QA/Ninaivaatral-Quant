@@ -1,16 +1,24 @@
-// Mock API Client for Frontend Development
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// Production API Client connecting to FastAPI backend
+const API_URL = 'http://localhost:8000';
 
 export const apiClient = {
   login: async (username, password) => {
-    await delay(800);
-    if (username === 'admin' && password === 'admin') {
-      const fakeToken = "mock.jwt.token.123";
-      localStorage.setItem('auth_token', fakeToken);
-      return { success: true, token: fakeToken };
+    const res = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    
+    if (!res.ok) {
+      throw new Error('Invalid credentials');
     }
-    throw new Error('Invalid credentials');
+    
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem('auth_token', data.token);
+      return data;
+    }
+    throw new Error('No token received');
   },
   
   logout: () => {
@@ -22,49 +30,51 @@ export const apiClient = {
   },
   
   getHealth: async () => {
-    // In the real app, this will hit GET /health on the FastAPI backend
-    // which will also ping the LiteLLM proxy internally.
-    await delay(200);
-    return {
-      backend: 'online',
-      litellm: 'online'
-    };
+    try {
+      const res = await fetch(`${API_URL}/health`);
+      if (!res.ok) throw new Error('Backend unhealthy');
+      return await res.json();
+    } catch (err) {
+      throw new Error('Backend unreachable');
+    }
   },
   
   analyze: async (payloadText) => {
-    await delay(1500); // Simulate AI processing time
+    const token = localStorage.getItem('auth_token');
+    if (!token) throw new Error('Not authenticated');
     
-    // Return mock successful response
-    return {
-      confidence_score: Math.floor(Math.random() * 40) + 50, // 50-90
-      historical_win_rate: Math.floor(Math.random() * 30) + 40, // 40-70
-      suggested_bias: Math.random() > 0.5 ? "LONG" : "SHORT",
-      key_risk: "SL cluster @29200",
-      similar_sessions_count: Math.floor(Math.random() * 20) + 5,
-      pattern_notes: "b-Shape + high vol at POC",
-      narrative: "Based on historical sessions with similar structural patterns, we found multiple matches. Consider the suggested bias but watch out for key risk areas near the value area boundaries.",
-      execution_time: 1.5,
-      status: "Success"
-    };
+    const res = await fetch(`${API_URL}/analyze`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ payload: payloadText })
+    });
+    
+    if (!res.ok) {
+      if (res.status === 401) apiClient.logout(); // Token expired
+      throw new Error(`Analyze failed: ${res.statusText}`);
+    }
+    
+    return await res.json();
   },
   
   getHistory: async () => {
-    await delay(500);
-    return [
-      {
-        id: "1",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        confidence_score: 78,
-        historical_win_rate: 65,
-        status: "Success"
-      },
-      {
-        id: "2",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-        confidence_score: 42,
-        historical_win_rate: 38,
-        status: "Success"
+    const token = localStorage.getItem('auth_token');
+    if (!token) throw new Error('Not authenticated');
+    
+    const res = await fetch(`${API_URL}/history`, {
+      headers: { 
+        'Authorization': `Bearer ${token}`
       }
-    ];
+    });
+    
+    if (!res.ok) {
+      if (res.status === 401) apiClient.logout();
+      throw new Error(`History fetch failed: ${res.statusText}`);
+    }
+    
+    return await res.json();
   }
 };

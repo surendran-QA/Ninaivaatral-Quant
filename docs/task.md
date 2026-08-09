@@ -1,0 +1,9 @@
+- [x] Create separate hackathon project directory
+- [ ] Choose tech stack (React vs Vanilla JS)
+- [ ] Initialize Frontend project scaffolding
+- [ ] Design and build Dashboard UI
+- [ ] Implement file upload functionality
+- [ ] Add `CORSMiddleware` to python backend
+- [ ] Connect Frontend to `/analyze` and `/memory` API
+- [ ] Write `zerops.yml` for deployment
+- [ ] Final testing

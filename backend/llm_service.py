@@ -3,6 +3,13 @@ import asyncio
 import json
 import uuid
 from datetime import datetime
+import os
+data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cognee_data")
+system_root = os.path.join(data_root, ".cognee_system")
+os.makedirs(system_root, exist_ok=True)
+os.makedirs(os.path.join(system_root, "databases"), exist_ok=True)
+os.environ["DATA_ROOT_DIRECTORY"] = data_root
+os.environ["SYSTEM_ROOT_DIRECTORY"] = system_root
 import cognee
 from cognee.api.v1.search import SearchType
 import openai
@@ -73,6 +80,20 @@ async def analyze_setup_payload(payload: str, payload_queue: asyncio.Queue, INGE
         logging.error(f"Cognee Search Failed: {str(search_err)}", exc_info=True)
         search_task.cancel()
         
+        if "Search prerequisites not met" in str(search_err):
+            logging.warning("Cognee Search: Database uninitialized. Triggering Cold Start.")
+            return {
+                "status": "success", 
+                "confidence_score": 0, 
+                "historical_win_rate": 0,
+                "narrative": "Insufficient Historical Data. Cold Start.",
+                "suggested_bias": "NEUTRAL",
+                "key_risk": "No Historical Match",
+                "pattern_notes": "Awaiting more data.",
+                "similar_sessions_count": 0,
+                "execution_time": 0.0
+            }
+            
         return {
             "status": "error", 
             "confidence_score": 0, 
