@@ -56,3 +56,6 @@ zerops:
       deployFiles: frontend/dist/~
     run:
       base: static
+      ports:
+        - port: 80
+          httpSupport: true
