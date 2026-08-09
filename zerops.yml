@@ -20,8 +20,6 @@ zerops:
   - setup: backend
     build:
       base: python@3.11
-      prepareCommands:
-        - apk add --no-cache cmake g++ build-base
       buildCommands:
         - cd backend && pip install --no-cache-dir -r requirements.txt
       deployFiles: backend/~
