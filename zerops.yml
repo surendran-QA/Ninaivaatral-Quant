@@ -54,6 +54,8 @@ zerops:
       buildCommands:
         - cd frontend && npm ci && npm run build
       deployFiles: frontend/dist/~
+      envVariables:
+        VITE_API_URL: ${VITE_API_URL}
     run:
       base: static
       ports:

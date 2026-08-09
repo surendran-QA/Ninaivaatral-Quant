@@ -1,5 +1,5 @@
 // Production API Client connecting to FastAPI backend
-const API_URL = 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const apiClient = {
   login: async (username, password) => {
